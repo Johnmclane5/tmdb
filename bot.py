@@ -42,8 +42,6 @@ def search_movie_entry(update, context):
                 for result in movie_results[:10]:  # Only consider the top 10 results
                     title = result["title"]
                     overview = result["overview"]
-                    vote_average = result["vote_average"]
-                    release_date = result.get("release_date", "")
                     entry_id = result["id"]
                     callback_data = f"entry_id={entry_id}&type=movie"
                     button = InlineKeyboardButton(text=title, callback_data=callback_data)
@@ -77,8 +75,6 @@ def search_tv_entry(update, context):
                 for result in tv_results[:10]:  # Only consider the top 10 results
                     title = result["name"]
                     overview = result["overview"]
-                    vote_average = result["vote_average"]
-                    release_date = result.get("first_air_date", "")
                     entry_id = result["id"]
                     callback_data = f"entry_id={entry_id}&type=tv"
                     button = InlineKeyboardButton(text=title, callback_data=callback_data)
@@ -121,19 +117,10 @@ def button_callback(update, context):
                 title = entry["title"] if "title" in entry else entry["name"]
                 overview = entry["overview"]
                 poster_path = entry["poster_path"]
-                vote_average = entry["vote_average"]
-                release_date = entry.get("release_date", "")
-                genre_ids = entry.get("genre_ids", [])
-
-                # Get the genre names
-                genres = get_genre_names(genre_ids)
 
                 # Prepare the entry details message
                 message = f"<i><b>🏷️Title:{title}</b></i>\n"
                 message += f"<i><b>📝Overview:</b>\n{overview}</i>\n"
-                message += f"<i><b>🎬Genre: {', '.join(genres)}</b></i>\n"
-                message += f"<i><b>⭐️Rating: {vote_average}</b></i>\n"
-                message += f"<i><b>📅Release Date: {release_date}</b></i>"
 
                 # Download the image and send it as a photo along with the title and overview
                 photo_url= f"https://image.tmdb.org/t/p/w780/{poster_path}"
@@ -177,8 +164,6 @@ def button_callback(update, context):
                             entry_type = "tv"
                             title = result["name"]
                         overview = result["overview"]
-                        vote_average = result["vote_average"]
-                        release_date = result.get("release_date", "")
                         entry_id = result["id"]
                         callback_data = f"entry_id={entry_id}&type={entry_type}"
                         button = InlineKeyboardButton(text=title, callback_data=callback_data)
@@ -202,19 +187,6 @@ def button_callback(update, context):
     except Exception as e:
         logging.error(f"Error in button_callback: {e}")
         query.answer("An error occurred while processing your request. Please try again later.")
-
-def get_genre_names(genre_ids):
-    url = f"https://api.themoviedb.org/3/genre/movie/list"
-    params = {
-        "api_key": tmdb_api_key
-    }
-    response = requests.get(url, params=params)
-    data = response.json()
-    genre_names = []
-    for genre in data["genres"]:
-        if genre["id"] in genre_ids:
-            genre_names.append(genre["name"])
-    return genre_names
 
 # Make the API request to search for movies
 def search_movies(query):
